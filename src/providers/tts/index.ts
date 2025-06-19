@@ -1,8 +1,9 @@
 import { TTSConfig, TTSResult } from '../../types';
 import { ElevenLabsProvider } from './elevenlabs';
-import { OpenAIProvider } from './openai';
 import { GoogleProvider } from './google';
+import { OpenAIProvider } from './openai';
 import { ResembleAIProvider } from './resembleai';
+
 
 export interface TTSProviderInterface {
   synthesize(text: string): Promise<TTSResult>;
