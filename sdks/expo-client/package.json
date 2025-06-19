@@ -1,0 +1,40 @@
+{
+  "name": "talkative-expo-client",
+  "version": "1.0.0",
+  "description": "Expo client SDK for Talkative voice server",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
+    "test": "jest"
+  },
+  "keywords": [
+    "expo",
+    "socket.io",
+    "voice",
+    "realtime",
+    "react-native"
+  ],
+  "author": "Talkative Team",
+  "license": "MIT",
+  "dependencies": {
+    "socket.io-client": "^4.7.4",
+    "expo-av": "~13.10.5",
+    "expo-permissions": "~14.4.5",
+    "react-native": "0.73.2"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.45",
+    "@types/react-native": "^0.73.0",
+    "typescript": "^5.2.2",
+    "ts-node-dev": "^2.0.0",
+    "jest": "^29.7.0",
+    "@types/jest": "^29.5.5"
+  },
+  "peerDependencies": {
+    "expo": "~50.0.0",
+    "react": "18.2.0",
+    "react-native": "0.73.2"
+  }
+} 
