@@ -81,7 +81,8 @@ export class VoiceServer extends EventEmitter {
       throw new Error('STT configuration is required');
     }
 
-    this.llmProvider = LLMProviderFactory.createProvider(this.config.llm);
+    // Use LangChain providers by default
+    this.llmProvider = LLMProviderFactory.createProvider(this.config.llm, true);
     this.ttsProvider = TTSProviderFactory.createProvider(this.config.tts);
     this.sttProvider = STTProviderFactory.createProvider(this.config.stt);
   }

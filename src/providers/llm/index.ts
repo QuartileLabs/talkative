@@ -1,4 +1,7 @@
 import { LLMConfig, LLMResponse, LLMProvider } from '../../types';
+import { LangChainLLMProviderFactory, LangChainLLMProviderInterface } from './langchain';
+
+// Legacy providers for backward compatibility
 import { OpenAIProvider } from './openai';
 import { ClaudeProvider } from './claude';
 import { XAIProvider } from './xai';
@@ -9,7 +12,12 @@ export interface LLMProviderInterface {
 }
 
 export class LLMProviderFactory {
-  static createProvider(config: LLMConfig): LLMProviderInterface {
+  static createProvider(config: LLMConfig, useLangChain: boolean = true): LLMProviderInterface {
+    if (useLangChain) {
+      return LangChainLLMProviderFactory.createProvider(config);
+    }
+
+    // Legacy providers for backward compatibility
     switch (config.provider) {
       case 'openai':
         return new OpenAIProvider(config);
@@ -23,4 +31,15 @@ export class LLMProviderFactory {
         throw new Error(`Unsupported LLM provider: ${config.provider}`);
     }
   }
-} 
+}
+
+// Export the new LangChain providers for direct use
+export { 
+  LangChainLLMProviderFactory, 
+  LangChainLLMProviderInterface,
+  BaseLangChainProvider,
+  LangChainOpenAIProvider,
+  LangChainClaudeProvider,
+  LangChainGoogleProvider,
+  LangChainXAIProvider
+} from './langchain'; 
