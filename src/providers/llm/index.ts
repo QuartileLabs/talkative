@@ -6,6 +6,7 @@ import { OpenAIProvider } from './openai';
 import { ClaudeProvider } from './claude';
 import { XAIProvider } from './xai';
 import { GoogleProvider } from './google';
+import { CustomProvider } from './custom';
 
 export interface LLMProviderInterface {
   generateResponse(messages: Array<{ role: string; content: string }>): Promise<LLMResponse>;
@@ -27,6 +28,8 @@ export class LLMProviderFactory {
         return new XAIProvider(config);
       case 'google':
         return new GoogleProvider(config);
+      case 'custom':
+        return new CustomProvider(config);
       default:
         throw new Error(`Unsupported LLM provider: ${config.provider}`);
     }
@@ -41,5 +44,6 @@ export {
   LangChainOpenAIProvider,
   LangChainClaudeProvider,
   LangChainGoogleProvider,
-  LangChainXAIProvider
+  LangChainXAIProvider,
+  LangChainCustomProvider
 } from './langchain'; 
