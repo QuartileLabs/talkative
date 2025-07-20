@@ -9,7 +9,7 @@ A real-time voice conversation server that provides speech-to-text, language mod
 - **Session Management**: Maintains conversation history and session state
 - **LangChain Integration**: Enhanced LLM capabilities with streaming, memory, and tools
 - **Multiple Provider Support**: 
-  - LLM: OpenAI, Claude, XAI, Google (with LangChain)
+  - LLM: OpenAI, Claude, XAI, Google, Custom Endpoints (with LangChain)
   - TTS: ElevenLabs, OpenAI, Google, ResembleAI
   - STT: OpenAI, Google, ElevenLabs
 - **WebSocket Communication**: Real-time bidirectional communication
@@ -118,6 +118,34 @@ const enhancedConfig: LangChainLLMConfig = {
 };
 ```
 
+### Custom Endpoint Configuration
+
+You can use custom LLM endpoints that follow the same request/response format as standard providers:
+
+```typescript
+const customLLMConfig: LLMConfig = {
+  provider: 'custom',
+  apiKey: 'your-api-key-here',
+  endpoint: 'https://your-custom-endpoint.com/v1/chat/completions',
+  model: 'your-model-name',
+  maxTokens: 1000,
+  temperature: 0.7,
+  systemPrompt: 'You are a helpful assistant.'
+};
+```
+
+**Custom Endpoint Requirements:**
+- Must accept POST requests with JSON body
+- Request format: `{ model, messages, max_tokens, temperature }`
+- Response format: `{ choices: [{ message: { content } }], usage?: { prompt_tokens, completion_tokens, total_tokens } }`
+- Must support Bearer token authentication via `Authorization` header
+
+**Example Use Cases:**
+- Local LLM servers (Ollama, LM Studio)
+- OpenAI-compatible API clones
+- Self-hosted model deployments
+- Custom model APIs
+
 ## Usage
 
 ### Server Setup (LangChain by default)
@@ -179,6 +207,28 @@ import { LLMProviderFactory } from './src/providers/llm';
 
 // Use legacy providers if needed
 const legacyProvider = LLMProviderFactory.createProvider(config.llm, false);
+```
+
+### Custom Endpoint Usage
+
+```typescript
+import { LLMProviderFactory } from './src/providers/llm';
+
+// Create custom endpoint provider
+const customProvider = LLMProviderFactory.createProvider({
+  provider: 'custom',
+  apiKey: 'your-api-key',
+  endpoint: 'http://localhost:8000/v1/chat/completions',
+  model: 'llama-2-7b',
+  maxTokens: 500,
+  temperature: 0.5,
+  systemPrompt: 'You are a helpful local AI assistant.'
+});
+
+// Use it like any other provider
+const response = await customProvider.generateResponse([
+  { role: 'user', content: 'Hello, how are you?' }
+]);
 ```
 
 ## API Endpoints
@@ -270,6 +320,9 @@ See `examples/voice-server-usage.ts` for a complete working example.
 
 ### LangChain Migration
 See `examples/langchain-migration-example.ts` for LangChain migration examples.
+
+### Custom Endpoint Usage
+See `examples/custom-endpoint-usage.ts` for examples of using custom LLM endpoints.
 
 ## Environment Variables
 

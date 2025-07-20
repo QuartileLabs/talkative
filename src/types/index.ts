@@ -11,12 +11,13 @@ export interface VoiceServerConfig {
 }
 
 export interface LLMConfig {
-  provider: 'openai' | 'claude' | 'xai' | 'google';
+  provider: 'openai' | 'claude' | 'xai' | 'google' | 'custom';
   apiKey: string;
   model?: string;
   maxTokens?: number;
   temperature?: number;
   systemPrompt?: string;
+  endpoint?: string; // Custom endpoint URL for custom provider
 }
 
 export interface TTSConfig {
@@ -110,6 +111,6 @@ export interface VoiceServerEvents {
   'error': (error: Error) => void;
 }
 
-export type LLMProvider = 'openai' | 'claude' | 'xai' | 'google';
+export type LLMProvider = 'openai' | 'claude' | 'xai' | 'google' | 'custom';
 export type TTSProvider = 'elevenlabs' | 'openai' | 'google' | 'resembleai';
 export type STTProvider = 'openai' | 'google' | 'elevenlabs'; 
