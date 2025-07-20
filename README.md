@@ -1,19 +1,40 @@
 # VoiceServer
 
-A real-time voice conversation server that provides speech-to-text, language model processing, and text-to-speech capabilities through WebSocket connections.
+A real-time voice conversation server that provides speech-to-text, language model processing, and text-to-speech capabilities through WebSocket connections. Now powered by **LangChain** for enhanced LLM capabilities!
 
 ## Features
 
 - **Real-time Audio Processing**: Stream audio chunks and process them in real-time
 - **Automatic Silence Detection**: Automatically triggers processing after 2 seconds of silence
 - **Session Management**: Maintains conversation history and session state
+- **LangChain Integration**: Enhanced LLM capabilities with streaming, memory, and tools
 - **Multiple Provider Support**: 
-  - LLM: OpenAI, Claude, XAI, Google
+  - LLM: OpenAI, Claude, XAI, Google (with LangChain)
   - TTS: ElevenLabs, OpenAI, Google, ResembleAI
   - STT: OpenAI, Google, ElevenLabs
 - **WebSocket Communication**: Real-time bidirectional communication
 - **REST API Endpoints**: Health checks and session management
 - **Configurable Timeouts**: Automatic session cleanup and audio buffer management
+
+## 🚀 LangChain Migration
+
+The LLM service has been migrated to use **LangChain**, providing:
+
+- **Drop-in Replacement**: No code changes needed for existing implementations
+- **Enhanced Features**: Streaming, memory management, callbacks, and tools
+- **Better Abstraction**: Consistent interface across all LLM providers
+- **Advanced Capabilities**: Retry logic, caching, and cost tracking
+- **Backward Compatibility**: Legacy providers still available
+
+### Migration Benefits
+
+✅ **Streaming Responses**: Real-time token streaming for better UX  
+✅ **Memory Management**: Conversation memory with configurable limits  
+✅ **Callback System**: Custom handlers for tokens, errors, and events  
+✅ **Tool Integration**: Support for function calling and tools  
+✅ **Retry Logic**: Automatic retry with exponential backoff  
+✅ **Response Caching**: Configurable caching to reduce API calls  
+✅ **Cost Tracking**: Usage and cost monitoring  
 
 ## Installation
 
@@ -23,7 +44,7 @@ npm install
 
 ## Configuration
 
-Create a configuration object with your API keys and preferences:
+### Basic Configuration (LangChain by default)
 
 ```typescript
 import { VoiceServerConfig } from './src/types';
@@ -59,9 +80,47 @@ const config: VoiceServerConfig = {
 };
 ```
 
+### Enhanced LangChain Configuration
+
+```typescript
+import { LangChainLLMConfig } from './src/types/langchain';
+
+const enhancedConfig: LangChainLLMConfig = {
+  provider: 'openai',
+  apiKey: process.env.OPENAI_API_KEY,
+  model: 'gpt-4',
+  maxTokens: 150,
+  temperature: 0.7,
+  systemPrompt: 'You are a helpful AI assistant with enhanced capabilities.',
+  streaming: true,
+  memory: {
+    type: 'buffer',
+    maxTokenLimit: 2000,
+    returnMessages: true,
+  },
+  callbacks: [
+    {
+      name: 'tokenLogger',
+      handler: (token: string) => {
+        console.log('Token:', token);
+      },
+    },
+  ],
+  retry: {
+    maxRetries: 3,
+    backoffMultiplier: 2,
+    maxDelay: 10000,
+  },
+  cache: {
+    enabled: true,
+    ttl: 3600, // 1 hour
+  },
+};
+```
+
 ## Usage
 
-### Server Setup
+### Server Setup (LangChain by default)
 
 ```typescript
 import { VoiceServer } from './src/VoiceServer';
@@ -85,51 +144,41 @@ voiceServer.on('llm-response-complete', (sessionId, response) => {
 await voiceServer.start();
 ```
 
-### Client Connection
+### Using Enhanced LangChain Features
 
-```javascript
-// Install socket.io-client: npm install socket.io-client
-import { io } from 'socket.io-client';
+```typescript
+import { EnhancedLangChainLLMProviderFactory } from './src/providers/llm/langchain/enhanced';
 
-const socket = io('http://localhost:3000');
+// Create enhanced provider
+const enhancedProvider = EnhancedLangChainLLMProviderFactory.createProvider(enhancedConfig);
 
-// Join a session
-socket.emit('join-session', 'user-session-123');
-
-socket.on('session-joined', (sessionId) => {
-  console.log(`Joined session: ${sessionId}`);
-  
-  // Start listening for audio
-  socket.emit('start-listening', sessionId);
+// Streaming response
+const messages = [{ role: 'user', content: 'Tell me a story.' }];
+await enhancedProvider.generateStreamingResponse(messages, (token) => {
+  process.stdout.write(token); // Stream tokens in real-time
 });
 
-socket.on('listening-started', (sessionId) => {
-  console.log(`Started listening in session: ${sessionId}`);
+// Memory management
+enhancedProvider.setMemory({
+  messages: [
+    { role: 'user', content: 'Hello', timestamp: new Date() },
+    { role: 'assistant', content: 'Hi there!', timestamp: new Date() },
+  ],
+  metadata: {
+    sessionId: 'session-123',
+    createdAt: new Date(),
+    lastUpdated: new Date(),
+  },
 });
+```
 
-// Send audio chunks
-function sendAudioChunk(audioBuffer, isFinal = false) {
-  socket.emit('audio-chunk', {
-    sessionId: 'user-session-123',
-    data: audioBuffer,
-    timestamp: Date.now(),
-    isFinal,
-  });
-}
+### Backward Compatibility
 
-// Listen for responses
-socket.on('transcription', (result) => {
-  console.log(`Transcription: "${result.text}"`);
-});
+```typescript
+import { LLMProviderFactory } from './src/providers/llm';
 
-socket.on('llm-response', (response) => {
-  console.log(`AI Response: "${response.text}"`);
-});
-
-socket.on('tts-audio', (audioBuffer) => {
-  // Play the audio
-  playAudio(audioBuffer);
-});
+// Use legacy providers if needed
+const legacyProvider = LLMProviderFactory.createProvider(config.llm, false);
 ```
 
 ## API Endpoints
@@ -194,6 +243,7 @@ The server implements intelligent audio processing:
 - Graceful degradation when providers fail
 - Detailed error messages sent to clients
 - Automatic cleanup of resources on errors
+- LangChain retry logic with exponential backoff
 
 ## Configuration Options
 
@@ -206,9 +256,20 @@ The server implements intelligent audio processing:
 - `sessionTimeout`: Configurable session timeout (default: 30 minutes)
 - Automatic cleanup interval: 1 minute
 
-## Example
+### LangChain Features
+- `streaming`: Enable real-time token streaming
+- `memory`: Configure conversation memory
+- `callbacks`: Custom event handlers
+- `retry`: Automatic retry configuration
+- `cache`: Response caching settings
 
+## Examples
+
+### Basic Usage
 See `examples/voice-server-usage.ts` for a complete working example.
+
+### LangChain Migration
+See `examples/langchain-migration-example.ts` for LangChain migration examples.
 
 ## Environment Variables
 
@@ -219,6 +280,23 @@ export OPENAI_API_KEY="your-openai-api-key"
 export ELEVENLABS_API_KEY="your-elevenlabs-api-key"
 export ANTHROPIC_API_KEY="your-anthropic-api-key"
 export GOOGLE_API_KEY="your-google-api-key"
+```
+
+## Migration Guide
+
+### From Legacy to LangChain
+
+1. **No Code Changes Required**: The migration is automatic and backward compatible
+2. **Enhanced Features**: Enable streaming, memory, and callbacks as needed
+3. **Provider Consistency**: All providers now use the same LangChain interface
+4. **Better Error Handling**: Improved retry logic and error recovery
+
+### Testing the Migration
+
+```bash
+# Run the migration example
+npm run build
+node dist/examples/langchain-migration-example.js
 ```
 
 ## License
